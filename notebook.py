@@ -15,22 +15,23 @@ class Notebook:
     def from_json(self, js):
         self.notes = {}
         for item in js:
-            note = Note()
+            headline = item['headline']
+            body = item['body']
+            note = Note(headline, body)
             note.id = item['id']
-            note.headline = item['headline']
-            note.body = item['body']
-            note.time_created = datetime.fromtimestamp(item['time_created'])
-            note.time_updated = datetime.fromtimestamp(item['time_updated'])
+            note.time_created = datetime.datetime.fromtimestamp(item['time_created'])
+            note.time_updated = datetime.datetime.fromtimestamp(item['time_updated'])
             self.notes[note.id] = note
     
 def notebook_create():
     return Notebook()
 
 def notebook_load(fname):
+    n = Notebook()
     with open(fname) as f:
-        d = json.load(f)
-        print(d)
-    return
+        n.from_json(json.load(f))
+    return n
+
 
 def notebook_save(n, fname):
     with open(fname, 'w') as f:

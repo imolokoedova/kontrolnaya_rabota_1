@@ -4,13 +4,13 @@ import datetime
 class Notebook:
     def __init__(self):
         self.notes = {}
+        self.note_id = 0
 
     def __str__(self):
         s = ""
         for i in self.notes.values():
-            s += "  "
+            s += "\n  "
             s += str(i)
-            s += "\n"
         return s
         
     def to_json(self):
@@ -18,18 +18,22 @@ class Notebook:
         for k in self.notes:
             item = self.notes[k]
             j.append(item.to_json())
-        return j
+        return {
+            'notes': j,
+            'note_id': self.note_id
+        }
     
     def from_json(self, js):
         self.notes = {}
-        for item in js:
+        self.note_id = js['note_id']
+        for item in js['notes']:
+            id = str(item['id'])
             headline = item['headline']
             body = item['body']
-            note = Note(headline, body)
-            note.id = item['id']
+            note = Note(id, headline, body)
             note.time_created = datetime.datetime.fromtimestamp(item['time_created'])
             note.time_updated = datetime.datetime.fromtimestamp(item['time_updated'])
-            self.notes[note.id] = note
+            self.notes[id] = note
     
 def notebook_create():
     return Notebook()
@@ -49,15 +53,16 @@ def notebook_save(n, fname):
 def notebook_delete_item(n, id):
     return n.notes.pop(id)
 
-def notebook_update_item(n, item):
+def notebook_create_item(n, headline, body):
+    item = Note(n.note_id, headline, body)
+    n.note_id += 1
     n.notes[item.id] = item
-    return;
+    return item;
 
 class Note:
-    note_id = 0
-    def __init__(self, headline, body):
-        self.id = str(Note.note_id)
-        Note.note_id += 1
+    
+    def __init__(self, id, headline, body):
+        self.id = id
         self.headline = headline
         self.body = body
         now = datetime.datetime.now()
@@ -81,8 +86,7 @@ def enter(str):
 def do_create_notebook_item(n):
     headline = enter("Введите заголовок:")
     body = enter("Введите тело:")
-    note = Note(headline, body)
-    notebook_update_item(n, note)
+    note = notebook_create_item(n, headline, body)
     print(f"Заметка создана: {note}")
     return;
         
@@ -105,6 +109,15 @@ def do_delete_notebook_item(n):
         return
     note = notebook_delete_item(n, id)
     print(f"Заметка удалена: {note}")
+    return;
+        
+def do_view_notebook_item(n):
+    id = enter("Введите номер заметки:");
+    if (id not in n.notes):
+        print("Заметка не найдена")
+        return
+    note = n.notes[id]
+    print(f"Заметка: {note}")
     return;
         
 def do_save_notebook(n):
@@ -139,8 +152,8 @@ def do_work():
             do_update_notebook_item(n)
         elif (line == "D"):
             do_delete_notebook_item(n)
-#        elif (line == "V"):
-#            do_view_notebook_item(n)
+        elif (line == "V"):
+            do_view_notebook_item(n)
         elif (line == "I"):
             do_list_notebook(n)
         elif (line == "S"):

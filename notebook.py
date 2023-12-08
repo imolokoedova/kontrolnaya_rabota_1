@@ -4,6 +4,14 @@ import datetime
 class Notebook:
     def __init__(self):
         self.notes = {}
+
+    def __str__(self):
+        s = ""
+        for i in self.notes.values():
+            s += "  "
+            s += str(i)
+            s += "\n"
+        return s
         
     def to_json(self):
         j = []
@@ -107,6 +115,10 @@ def do_load_notebook():
     fname = enter("Введите имя файла:")
     return notebook_load(fname)
         
+def do_list_notebook(n):
+    print(f"Содержимое ноутбука: {str(n)}")
+
+
 pr = """
 Нажмите: 
 C для создания заметки, 
@@ -127,6 +139,10 @@ def do_work():
             do_update_notebook_item(n)
         elif (line == "D"):
             do_delete_notebook_item(n)
+#        elif (line == "V"):
+#            do_view_notebook_item(n)
+        elif (line == "I"):
+            do_list_notebook(n)
         elif (line == "S"):
             do_save_notebook(n)
         elif (line == "L"):

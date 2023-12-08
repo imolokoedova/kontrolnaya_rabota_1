@@ -1,17 +1,27 @@
 import json
 import datetime
 
+def notes_to_str(a):
+    s = ""
+    for i in a:
+        s += "\n  "
+        s += str(i)
+    return s   
+
 class Notebook:
     def __init__(self):
         self.notes = {}
         self.note_id = 0
 
     def __str__(self):
-        s = ""
+        return notes_to_str(self.notes.values())
+
+    def filter(self, dt):
+        a = []
         for i in self.notes.values():
-            s += "\n  "
-            s += str(i)
-        return s
+            if i.time_updated.date() == dt:
+                a.append(i)
+        return a
         
     def to_json(self):
         j = []
@@ -127,25 +137,34 @@ def do_save_notebook(n):
 def do_load_notebook():
     fname = enter("Введите имя файла:")
     return notebook_load(fname)
-        
+
 def do_list_notebook(n):
     print(f"Содержимое ноутбука: {str(n)}")
+        
+def do_filter_notebook(n):
+    d = enter("Введите дату изменения (ГГГГ-ММ-ДД):")
+    try:
+        dt = datetime.date.fromisoformat(d)
+        print(f"Найденные заметки: {notes_to_str(n.filter(dt))}")
+    except:
+        print("Неверный формат даты")
 
 
 pr = """
-Нажмите: 
 C для создания заметки, 
 U для редактирования заметки, 
 D для удаления заметки, 
 S чтобы сохранить файл, 
 L чтобы загрузить из файла  
-N чтобы создать новую ноутбук:
-    """
+N чтобы создать новую ноутбук
+I чтобы посмотреть все заметки
+V чтобы посмотреть нужную заметку
+F чтобы выбрать все заметки по дате изменения
+Нажмите: """
 def do_work():
     n = notebook_create()
     while (True):
         line = input(pr)
-        print(line)
         if (line == "C"):
             do_create_notebook_item(n)
         elif (line == "U"):
@@ -156,6 +175,8 @@ def do_work():
             do_view_notebook_item(n)
         elif (line == "I"):
             do_list_notebook(n)
+        elif (line == "F"):
+            do_filter_notebook(n)
         elif (line == "S"):
             do_save_notebook(n)
         elif (line == "L"):
